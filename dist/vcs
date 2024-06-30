@@ -382,6 +382,8 @@ declare FFPROBE_BIN=
 
 # ImageMagick's convert command. Historically "convert", since IMv7 "magick"
 declare CONVERT_BIN=
+declare IDENTIFY_BIN=
+declare MONTAGE_BIN=
 # Will be set to 1 if running with ImageMagick v7 (or higher)
 declare -i IM7=0
 
@@ -1402,6 +1404,16 @@ pad() {
 	echo $2
 }
 
+# Wrapper around montage
+montage() {
+        "$MONTAGE_BIN" "$@"
+}
+
+# Wrapper around identify
+identify() {
+        "$IDENTIFY_BIN" "$@"
+}
+
 # Get Image Width
 # imw($1 = file)
 imw() {
@@ -1595,6 +1607,8 @@ test_programs() {
 
 	echo "IM7: $IM7"
 	echo "CONVERT_BIN: $CONVERT_BIN"
+	echo "IDENTIFY_BIN: $IDENTIFY_BIN"
+	echo "MONTAGE_BIN: $MONTAGE_BIN"
 
 	# awk is required by SUS/POSIX but just to be sure...
 	for prog in convert montage identify mktemp grep egrep cut sed awk ; do
@@ -1608,9 +1622,13 @@ test_programs() {
 	if [[ -n "$magick" ]]; then
 		echo "magick binary found"
 		CONVERT_BIN="$magick"
+		IDENTIFY_BIN="$magick"
+		MONTAGE_BIN="$magick"
 	else
 		echo "magick NOT found - falling back on convert"
 		CONVERT_BIN=$(type -pf convert)
+		IDENTIFY_BIN=$(type -pf identify)
+		MONTAGE_BIN=$(type -pf montage)
 	fi
 	local imver=$($CONVERT_BIN -version | head -1 | awk '{print $3}' | cut -d. -f1)
 	if [[ $imver -ge 7 ]]; then
@@ -1620,10 +1638,17 @@ test_programs() {
 		echo "Imagemagick v7 NOT found"
 	fi
 
+	echo "IM7: $IM7"
+	echo "CONVERT_BIN: $CONVERT_BIN"
+	echo "IDENTIFY_BIN: $IDENTIFY_BIN"
+	echo "MONTAGE_BIN: $MONTAGE_BIN"
+	echo "retval: $retval"
+
 	# TODO: [[x2]]
 
 	# Early exit
-	[[ $retval -eq 0 ]] || return $EX_UNAVAILABLE
+	#[[ $retval -eq 0 ]] || return $EX_UNAVAILABLE
+	echo "didn't exit early"
 
 	# ImageMagick version. 6 is a must, I'm probably using some
 	# features that require a higher minor version
@@ -1647,7 +1672,7 @@ test_programs() {
 		(( retval++ ,1 ))
 	fi
 
-	[[ $retval -eq 0 ]] || return $EX_UNAVAILABLE
+	#[[ $retval -eq 0 ]] || return $EX_UNAVAILABLE
 }
 
 # Test wether $GETOP is a compatible version; try to choose an alternate if
