@@ -1593,6 +1593,9 @@ test_programs() {
 	FFPROBE_BIN=$(type -pf ffprobe) || true
 	check_avail_tools
 
+	echo "IM7: $IM7"
+	echo "CONVERT_BIN: $CONVERT_BIN"
+
 	# awk is required by SUS/POSIX but just to be sure...
 	for prog in convert montage identify mktemp grep egrep cut sed awk ; do
 		if ! type -pf "$prog" ; then
@@ -1603,13 +1606,18 @@ test_programs() {
 	# ImageMagick v7 deprecates convert in favour of just "magick"
 	local magick=$(type -pf magick)
 	if [[ -n "$magick" ]]; then
+		echo "magick binary found"
 		CONVERT_BIN="$magick"
 	else
+		echo "magick NOT found - falling back on convert"
 		CONVERT_BIN=$(type -pf convert)
 	fi
 	local imver=$($CONVERT_BIN -version | head -1 | awk '{print $3}' | cut -d. -f1)
 	if [[ $imver -ge 7 ]]; then
+		echo "Imagemagick v7 found"
 		IM7=1
+	else
+		echo "Imagemagick v7 NOT found"
 	fi
 
 	# TODO: [[x2]]
